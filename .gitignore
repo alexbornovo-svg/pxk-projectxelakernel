@@ -1,0 +1,14 @@
+# IDE - Visual Studio Code
+.vscode/
+
+# Build artifacts
+build/
+
+# ISO ed immagini disco (nel caso venissero create fuori da build)
+*.iso
+*.img
+*.bin
+
+# File oggetto e binari
+*.o
+*.elf
