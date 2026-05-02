@@ -1,12 +1,15 @@
 #include "idt.h"
+#include "io.h"
 #include "../lib/kstd.h"
 #include "../lib/pic.h"
 #include "../lib/gdt.h"
 #include "../drivers/ata.h"
 #include "../drivers/ext2.h"
-#include "../programs/shell.h"
+#include "../programs/shell_kernel.h"
+#include "../programs/shell_graphic.h"
+#include "../lib/xelagraph.h"
 
-void kmain()
+void kmain(multiboot_info_t *mbi)
 {
     uint line = 0;
     vga_clean();
@@ -16,6 +19,11 @@ void kmain()
     pic_remap();
     line = vga_write("IDT initialization...", line, GREY);
     idt_init();
+
+    outb(0x43, 0x36);
+    outb(0x40, 11932 & 0xFF);
+    outb(0x40, 11932 >> 8); 
+
     asm volatile("sti");
 
     line = vga_write("ATA initialization...", line, GREY);
@@ -32,5 +40,7 @@ void kmain()
     line = vga_write("PX KERNEL 2 READY", line, GREEN);
     line++;
 
-    shell_run(line);
+    fb_init(mbi);
+    clearscreen(0x00000000); 
+    shell_graphic_run(mbi);
 }

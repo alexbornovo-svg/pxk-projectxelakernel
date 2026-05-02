@@ -2,29 +2,39 @@ global loader
 extern kmain
 extern multiboot_mem_lower
 extern multiboot_mem_upper
+
 global idt_load
 extern keyboard_handler_c
 
-MAGIC_NUMBER equ 0x1BADB002
-FLAGS        equ 0x0
-CHECKSUM     equ -(MAGIC_NUMBER + FLAGS)
+global timer_handler_stub
+extern timer_handler_c
+
+MAGIC_NUMBER    equ 0x1BADB002
+MULTIBOOT_ALIGN equ 1 << 0
+MULTIBOOT_MEM   equ 1 << 1
+MULTIBOOT_VIDEO equ 1 << 2
+FLAGS    equ MULTIBOOT_ALIGN | MULTIBOOT_MEM | MULTIBOOT_VIDEO
+CHECKSUM equ -(MAGIC_NUMBER + FLAGS)
 
 section .multiboot
 align 4
     dd MAGIC_NUMBER
     dd FLAGS
     dd CHECKSUM
+    dd 0, 0, 0, 0, 0
+    dd 0
+    dd 800
+    dd 450
+    dd 32
 
 section .text
-
 loader:
     mov esp, stack_top
-
     mov eax, [ebx + 4]
     mov [multiboot_mem_lower], eax
     mov eax, [ebx + 8]
     mov [multiboot_mem_upper], eax
-
+    push ebx
     call kmain
 
 .loop:
@@ -40,6 +50,13 @@ global keyboard_handler_stub
 keyboard_handler_stub:
     pushad
     call keyboard_handler_c
+    popad
+    iretd
+
+global timer_handler_stub
+timer_handler_stub:
+    pushad
+    call timer_handler_c
     popad
     iretd
 

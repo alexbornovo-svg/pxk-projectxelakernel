@@ -1,9 +1,11 @@
-#include "shell.h"
+#include "shell_kernel.h"
 #include "types.h"
+#include "../lib/xelagraph.h"
 #include "../drivers/ext2.h"
 #include "../lib/string.h"
 #include "../lib/kstd.h"
 #include "../cpu/cpu.h"
+#include "../programs/shell_graphic.h"
 
 #define MAX_INPUT   128
 #define MAX_ARGS    8
@@ -215,7 +217,16 @@ void build_prompt(char *out)
     strcat(out, " $ ");
 }
 
-void shell_run(uint line)
+/*
+void switch_to_graphic(multiboot_info_t *mbi)
+{
+    fb_init(mbi);
+    clearscreen(0x00000000);
+    shell_graphic_run();
+}
+*/
+
+void kernel_shell_run(uint line, multiboot_info_t *mbi)
 {
     char  input[MAX_INPUT];
     char  prompt[MAX_PATH + 16];
@@ -246,8 +257,9 @@ void shell_run(uint line)
         else if (strcmp(cmd, "cat") == 0) line = cmd_cat(argc > 1 ? argv[1] : 0, line);
         else if (strcmp(cmd, "touch") == 0) line = cmd_touch(argc > 1 ? argv[1] : 0, line);
         else if (strcmp(cmd, "pwd") == 0) line = cmd_pwd(line);
-        else if (strcmp(cmd, "fastfetch") == 0) cpu_print_info(&line);
+        else if (strcmp(cmd, "fastfetch") == 0) cpu_print_info(line);
         else if (strcmp(cmd, "help") == 0) line = cmd_help(line);
+        // else if (strcmp(cmd, "startgui") == 0) switch_to_graphic(mbi);
         else if (strcmp(cmd, "clear") == 0)
         {
             vga_clean();
